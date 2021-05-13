@@ -14,6 +14,14 @@ pub enum Bit {
 }
 
 impl ByteString {
+    pub fn new() -> Self {
+        let mut node = [0; ID_LENGTH];
+        for i in 0..ID_LENGTH {
+            node[i] = random::<u8>();
+        }
+        ByteString(node)
+    }
+
     pub fn get(index: usize) -> Option<Bit> {
         // todo
         None
@@ -34,11 +42,7 @@ pub struct Node<T> {
 }
 
 impl nodeID {
-    pub fn new() -> Self {
-        let mut node = nodeID { id: [0; ID_LENGTH] };
-        for i in 0..ID_LENGTH {
-            node.id[i] = random::<u8>();
-        }
-        return node;
+    pub fn new(bs: ByteString) -> Self {
+        nodeID { id: bs }
     }
 }
