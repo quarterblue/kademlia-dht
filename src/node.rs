@@ -1,11 +1,19 @@
 use rand::random;
-// use serde_derive::{Deserialize, Serialize};
-// use sha1::{Digest, Sha1};
 use std::net::IpAddr;
 
-const ID_LENGTH: usize = 20;
+pub const ID_LENGTH: usize = 20;
 
-type ByteString = [u8; ID_LENGTH];
+#[derive(Debug)]
+pub struct ByteString([u8; ID_LENGTH]);
+#[derive(Debug)]
+pub enum Bit {
+    Zero,
+    One,
+}
+
+impl ByteString {
+    pub fn get(index: usize) -> Option<Bit> {}
+}
 
 #[derive(Debug)]
 pub struct nodeID {
