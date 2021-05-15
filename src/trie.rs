@@ -2,6 +2,7 @@ use crate::node::{Bit, ByteString, Node, ID_LENGTH};
 use std::cell::RefCell;
 
 const NODES_PER_LEAF: usize = 1;
+const k: usize = 2;
 
 #[derive(Debug)]
 pub enum Vert<T> {
@@ -41,6 +42,19 @@ pub struct Leaf<T> {
     nodes: node_list<T>,
 }
 
+impl<T> Leaf<T> {
+    pub fn empty_new(bit: Bit) -> Self {
+        Leaf {
+            bit,
+            nodes: Some(RefCell::new(Vec::with_capacity(k))),
+        }
+    }
+
+    pub fn add_node(&mut self, node: Node<T>) {
+        //TODO
+    }
+}
+
 impl<T> Trie<T> {
     pub fn empty_new() -> Self {
         Trie {
@@ -49,7 +63,7 @@ impl<T> Trie<T> {
         }
     }
     pub fn add_leaf(&mut self, node: ByteString) {
-        match self.root {
+        match &self.root {
             Some(value) => {
                 // Bytes
                 for i in 0..20 {
@@ -57,6 +71,7 @@ impl<T> Trie<T> {
                     for j in 0..8 {
                         if (i == 19 && j == 7) {
                             // Handle leaf case
+                            let leaf = Some(Box::new(Vert::Leaf(Leaf::empty_new(Bit::One))));
                         } else {
                             // Handle vertex case
                             if (node.0[i] >> j) & 1 == 1 {
