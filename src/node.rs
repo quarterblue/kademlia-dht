@@ -14,7 +14,7 @@ pub enum Bit {
 }
 
 impl ByteString {
-    pub fn new() -> Self {
+    pub fn random_new() -> Self {
         let mut node = [0; ID_LENGTH];
         for i in 0..ID_LENGTH {
             node[i] = random::<u8>();
