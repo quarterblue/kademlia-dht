@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 const NODES_PER_LEAF: usize = 1;
-const k: usize = 2;
+const K_BUCKET_SIZE: usize = 4;
 
 #[derive(Debug)]
 pub enum Vert<T> {
