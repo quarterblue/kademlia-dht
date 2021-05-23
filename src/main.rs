@@ -1,11 +1,12 @@
 mod node;
-mod trie;
+// mod trie;
 
 use lib::test;
-use trie::Trie;
+// use trie::Trie;
 
 pub fn main() {
-    test();
-    let trie: Trie<i32> = Trie::empty_new();
-    println!("{:?}", trie);
+    // test();
+    // let trie: Trie<i32> = Trie::empty_new();
+    // println!("{:?}", trie);
+    println!("hello world");
 }

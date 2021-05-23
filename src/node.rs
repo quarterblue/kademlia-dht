@@ -13,6 +13,12 @@ pub enum Bit {
     None,
 }
 
+#[derive(Debug)]
+pub enum Route {
+    RouteTable(String),
+    None,
+}
+
 impl ByteString {
     pub fn random_new() -> Self {
         let mut node = [0; ID_LENGTH];
@@ -29,20 +35,35 @@ impl ByteString {
 }
 
 #[derive(Debug)]
-pub struct nodeID {
-    id: ByteString,
-}
-
-#[derive(Debug)]
-pub struct Node<T> {
-    node_id: nodeID,
+pub struct Node {
+    node_id: ByteString,
     ip_addr: IpAddr,
     port: u16,
-    data: T,
+    route_table: Route,
 }
 
-impl nodeID {
-    pub fn new(bs: ByteString) -> Self {
-        nodeID { id: bs }
+pub trait KadeNode {
+    fn get_ip() -> IpAddr;
+    fn get_port() -> u16;
+    fn get_nodeid() -> ByteString;
+}
+
+impl Node {
+    pub fn new_node(ip_addr: IpAddr, port: u16) -> Self {
+        Node {
+            node_id: ByteString::random_new(),
+            ip_addr,
+            port,
+            route_table: Route::None,
+        }
+    }
+
+    pub fn new_self(ip_addr: IpAddr, port: u16) -> Self {
+        Node {
+            node_id: ByteString::random_new(),
+            ip_addr,
+            port,
+            route_table: Route::None,
+        }
     }
 }

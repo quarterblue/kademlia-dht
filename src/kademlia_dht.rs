@@ -1,1 +1,3 @@
-pub struct kademlia {}
+pub struct Kademlia {}
+
+impl Kademlia {}

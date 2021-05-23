@@ -3,34 +3,67 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 const NODES_PER_LEAF: usize = 1;
-const K_BUCKET_SIZE: usize = 4;
+const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
 
 #[derive(Debug)]
-pub enum Vert<T> {
-    Vertex(Vertex<T>),
-    Leaf(Leaf<T>),
+pub enum Vert {
+    Vertex(Vertex),
+    Leaf(Leaf),
 }
 
-type leaf_node<T> = Option<Box<Vert<T>>>;
-type node_list<T> = Option<Rc<RefCell<Vec<Node<T>>>>>;
+type leaf_node = Option<Box<Vertex>>;
+type node_list = Option<Rc<RefCell<Vec<Node>>>>;
+
+pub struct KBucket {
+    node_bucket: NodeBucket,
+}
+
+impl KBucket {
+    pub fn new() -> Self {
+        KBucket {
+            node_bucket: NodeBucket::new(),
+        }
+    }
+}
+
+pub struct NodeBucket {
+    node_vector: Vec<Node>,
+}
+
+impl NodeBucket {
+    pub fn new() -> Self {
+        NodeBucket {
+            node_vector: Vec::new(),
+        }
+    }
+    pub fn sort() {}
+    pub fn get_latest() -> Node {
+        // TODO
+    }
+    pub fn get_oldest() -> Node {
+        // TODO
+    }
+}
 
 #[derive(Debug)]
-pub struct Trie<T> {
+pub struct Trie {
     pub length: u64,
-    root: leaf_node<T>,
+    root: leaf_node,
 }
 
 #[derive(Debug)]
-pub struct Vertex<T> {
+pub struct Vertex {
     bit: Bit,
-    left: leaf_node<T>,
-    right: leaf_node<T>,
+    k_bucket: Vec<Node>,
+    left: leaf_node,
+    right: leaf_node,
 }
 
 impl<T> Vertex<T> {
     fn new(bit: Bit) -> Vertex<T> {
         Vertex {
             bit,
+            k_bucket: Vec::with_capacity(K_BUCKET_SIZE),
             left: None,
             right: None,
         }
@@ -40,7 +73,7 @@ impl<T> Vertex<T> {
 #[derive(Debug)]
 pub struct Leaf<T> {
     bit: Bit,
-    nodes: node_list<T>,
+    nodes: node_list,
 }
 
 impl<T> Leaf<T> {
@@ -51,20 +84,31 @@ impl<T> Leaf<T> {
         }
     }
 
-    pub fn add_node(&mut self, node: Node<T>) {
+    pub fn add_node(&mut self, node: Node) {
         // TODO
         // Add a single Node to k-bucket vector list
         // let mut node_list = &self.nodes.unwrap();
     }
 }
 
+// Trie is the implementation of the routing table composed of k-buckets
 impl<T> Trie<T> {
     pub fn empty_new() -> Self {
         Trie {
             length: 0,
-            root: None,
+            root: Some(Box::new(Vertex::new(Bit::None))),
         }
     }
+
+    // Split k_bucket when length > k_bucket_size
+    pub fn split() {}
+
+    // Add vertex to the trie that contains k_bucket
+    pub fn add_vertex() {}
+
+    // Add node to the k_bucket
+    pub fn add_node() {}
+
     pub fn add_leaf(&mut self, node: ByteString) {
         match &self.root {
             Some(value) => {
