@@ -1,100 +1,85 @@
 use crate::node::{Bit, ByteString, Node, ID_LENGTH};
 use std::cell::RefCell;
+use std::iter::Iterator;
 use std::rc::Rc;
 
 const NODES_PER_LEAF: usize = 1;
 const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
 
+type leaf_node<K, V> = Option<Box<Vertex<K, V>>>;
+type node_list<K, V> = Option<Rc<RefCell<Vec<Node<K, V>>>>>;
+
 #[derive(Debug)]
-pub enum Vert {
-    Vertex(Vertex),
-    Leaf(Leaf),
+pub struct KBucket<K, V> {
+    node_bucket: Vec<Node<K, V>>,
 }
 
-type leaf_node = Option<Box<Vertex>>;
-type node_list = Option<Rc<RefCell<Vec<Node>>>>;
-
-pub struct KBucket {
-    node_bucket: NodeBucket,
-}
-
-impl KBucket {
+impl<K, V> KBucket<K, V> {
     pub fn new() -> Self {
         KBucket {
-            node_bucket: NodeBucket::new(),
-        }
-    }
-}
-
-pub struct NodeBucket {
-    node_vector: Vec<Node>,
-}
-
-impl NodeBucket {
-    pub fn new() -> Self {
-        NodeBucket {
-            node_vector: Vec::new(),
+            node_bucket: Vec::with_capacity(K_BUCKET_SIZE),
         }
     }
     pub fn sort() {}
-    pub fn get_latest() -> Node {
+    pub fn get_latest() -> Node<K, V> {
         // TODO
     }
-    pub fn get_oldest() -> Node {
+    pub fn get_oldest() -> Node<K, V> {
         // TODO
     }
 }
 
 #[derive(Debug)]
-pub struct Trie {
-    pub length: u64,
-    root: leaf_node,
-}
-
-#[derive(Debug)]
-pub struct Vertex {
+pub struct Vertex<K, V> {
     bit: Bit,
-    k_bucket: Vec<Node>,
-    left: leaf_node,
-    right: leaf_node,
+    k_bucket: KBucket<K, V>,
+    left: leaf_node<K, V>,
+    right: leaf_node<K, V>,
 }
 
-impl<T> Vertex<T> {
-    fn new(bit: Bit) -> Vertex<T> {
+impl<K, V> Vertex<K, V> {
+    fn new(bit: Bit) -> Vertex<K, V> {
         Vertex {
             bit,
-            k_bucket: Vec::with_capacity(K_BUCKET_SIZE),
+            k_bucket: KBucket::new(),
             left: None,
             right: None,
         }
     }
-}
 
-#[derive(Debug)]
-pub struct Leaf<T> {
-    bit: Bit,
-    nodes: node_list,
-}
+    fn add_node<I: Iterator>(&mut self, node: Node<K, V>, node_iter: I) {
+        match node_iter.next() {
+            0 => match self.left {
+                Some(vert) => {}
+                None => {}
+            },
+            1 => match self.right {
+                Some(vert) => {}
+                None => {}
+            },
+        }
 
-impl<T> Leaf<T> {
-    pub fn empty_new(bit: Bit) -> Self {
-        Leaf {
-            bit,
-            nodes: Some(Rc::new(RefCell::new(Vec::with_capacity(k)))),
+        if (self.k_bucket.len() < K_BUCKET_SIZE) {
+            self.k_bucket.push(node);
+        } else {
+            // Trickle down to next k_bucket
+            // TO DO
+            println!("TODO")
         }
     }
+}
 
-    pub fn add_node(&mut self, node: Node) {
-        // TODO
-        // Add a single Node to k-bucket vector list
-        // let mut node_list = &self.nodes.unwrap();
-    }
+// Trie structure representing the Route table composed of K buckets
+#[derive(Debug)]
+pub struct RouteTable<K, V> {
+    pub length: u64,
+    root: leaf_node<K, V>,
 }
 
 // Trie is the implementation of the routing table composed of k-buckets
-impl<T> Trie<T> {
+impl<K, V> RouteTable<K, V> {
     pub fn empty_new() -> Self {
-        Trie {
+        RouteTable {
             length: 0,
             root: Some(Box::new(Vertex::new(Bit::None))),
         }
@@ -107,51 +92,11 @@ impl<T> Trie<T> {
     pub fn add_vertex() {}
 
     // Add node to the k_bucket
-    pub fn add_node() {}
-
-    pub fn add_leaf(&mut self, node: ByteString) {
-        match &self.root {
-            Some(value) => {
-                // Bytes
-                for i in 0..20 {
-                    // Bits
-                    for j in 0..8 {
-                        if (i == 19 && j == 7) {
-                            // Handle leaf case
-                            let leaf: Option<Box<Vert<T>>> =
-                                Some(Box::new(Vert::Leaf(Leaf::empty_new(Bit::One))));
-                        } else {
-                            // Handle vertex case
-                            if (node.0[i] >> j) & 1 == 1 {
-                                let leaf_tmp: Option<Box<Vert<T>>> =
-                                    Some(Box::new(Vert::Vertex(Vertex::new(Bit::One))));
-                            } else {
-                                let leaf_tmp: Option<Box<Vert<T>>> =
-                                    Some(Box::new(Vert::Vertex(Vertex::new(Bit::Zero))));
-                            }
-                        }
-                    }
-                }
-            }
-            None => {
-                let mut root: Option<Box<Vert<T>>> =
-                    Some(Box::new(Vert::Vertex(Vertex::new(Bit::None))));
-                self.root = root;
-            }
-        }
-    }
-
-    pub fn add_leafrec(&mut self, add_node: Vertex<T>, node: ByteString) {
-        match add_node.bit {
-            Bit::One => {
-                println!("Handle One Case")
-            }
-            Bit::Zero => {
-                println!("Handle Two Case")
-            }
-            _ => {
-                println!("Something went wrong")
-            }
+    pub fn add_node(&mut self, node: Node<K, V>) {
+        if (self.root.unwrap().len() < K_BUCKET_SIZE) {
+            self.root.unwrap().take().push(node);
+        } else {
+            // TODO
         }
     }
 }
