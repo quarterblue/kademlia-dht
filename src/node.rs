@@ -3,17 +3,13 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 use std::net::IpAddr;
 
+use crate::trie::RouteTable;
+
 pub const ID_LENGTH: usize = 20;
 #[derive(Debug)]
 pub enum Bit {
     Zero,
     One,
-    None,
-}
-
-#[derive(Debug)]
-pub enum Route {
-    RouteTable(String),
     None,
 }
 
@@ -64,7 +60,7 @@ pub struct Node<K, V> {
     node_id: ByteString,
     ip_addr: IpAddr,
     port: u16,
-    route_table: Route,
+    route_table: Option<RouteTable<K, V>>,
     hash_map: Option<HashMap<K, V>>,
 }
 
@@ -87,7 +83,7 @@ impl<K, V> Node<K, V> {
             node_id: ByteString::random_new(),
             ip_addr,
             port,
-            route_table: Route::None,
+            route_table: None,
             hash_map: None,
         }
     }
@@ -97,7 +93,7 @@ impl<K, V> Node<K, V> {
             node_id: ByteString::random_new(),
             ip_addr,
             port,
-            route_table: Route::None,
+            route_table: None,
             hash_map: Some(HashMap::new()),
         }
     }

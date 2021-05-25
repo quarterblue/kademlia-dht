@@ -32,7 +32,7 @@ impl<K, V> KBucket<K, V> {
 #[derive(Debug)]
 pub struct Vertex<K, V> {
     bit: Bit,
-    k_bucket: KBucket<K, V>,
+    k_bucket: Option<KBucket<K, V>>,
     left: leaf_node<K, V>,
     right: leaf_node<K, V>,
 }
@@ -41,14 +41,14 @@ impl<K, V> Vertex<K, V> {
     fn new(bit: Bit) -> Vertex<K, V> {
         Vertex {
             bit,
-            k_bucket: KBucket::new(),
+            k_bucket: Some(KBucket::new()),
             left: None,
             right: None,
         }
     }
 
-    fn add_node<I: Iterator>(&mut self, node: Node<K, V>, node_iter: I) {
-        match node_iter.next() {
+    fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node<K, V>, node_iter: I) {
+        match node_iter.next().unwrap() {
             0 => match self.left {
                 Some(vert) => {}
                 None => {}
@@ -59,13 +59,13 @@ impl<K, V> Vertex<K, V> {
             },
         }
 
-        if (self.k_bucket.len() < K_BUCKET_SIZE) {
-            self.k_bucket.push(node);
-        } else {
-            // Trickle down to next k_bucket
-            // TO DO
-            println!("TODO")
-        }
+        // if self.k_bucket.node_bucket.len() < K_BUCKET_SIZE {
+        //     self.k_bucket.node_bucket.push(node);
+        // } else {
+        //     // Trickle down to next k_bucket
+        //     // TO DO
+        //     println!("TODO")
+        // }
     }
 }
 
@@ -93,10 +93,23 @@ impl<K, V> RouteTable<K, V> {
 
     // Add node to the k_bucket
     pub fn add_node(&mut self, node: Node<K, V>) {
-        if (self.root.unwrap().len() < K_BUCKET_SIZE) {
-            self.root.unwrap().take().push(node);
-        } else {
-            // TODO
+        match self.root {
+            Some(unwrapped) => {
+                let vert = *unwrapped;
+                if vert.k_bucket.is_none() {
+                    // TODO
+                    // This is a vertex with no K_Bucket, trickle down to Left or Right vertex
+                    // Depending on the iter.next() bit
+                } else {
+                    // TODO
+                    // Check that K_Bucket is not full, add node to the bucket
+                    // Split the K_Bucket into two if full
+                }
+            }
+            None => {
+                // TODO
+                // Error handling
+            }
         }
     }
 }
