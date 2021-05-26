@@ -13,7 +13,7 @@ pub enum Bit {
     None,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct ByteString(pub [u8; ID_LENGTH], usize);
 
 impl ByteString {
@@ -55,13 +55,18 @@ impl Iterator for ByteString {
     }
 }
 
-#[derive(Debug)]
-pub struct Node<K, V> {
-    node_id: ByteString,
-    ip_addr: IpAddr,
-    port: u16,
-    route_table: Option<RouteTable<K, V>>,
+pub struct KademNode<K, V> {
+    pub node_id: ByteString,
+    pub ip_addr: IpAddr,
+    pub port: u16,
+    route_table: Option<RouteTable>,
     hash_map: Option<HashMap<K, V>>,
+}
+#[derive(Debug, Clone, Copy)]
+pub struct Node {
+    pub node_id: ByteString,
+    pub ip_addr: IpAddr,
+    pub port: u16,
 }
 
 pub trait KadeNode {
@@ -71,20 +76,18 @@ pub trait KadeNode {
 }
 
 pub trait RPC<K, V> {
-    fn find_node() -> Node<K, V>;
+    fn find_node() -> Node;
     fn store() -> bool;
     fn find_value(key: K) -> V;
     fn ping() -> bool;
 }
 
-impl<K, V> Node<K, V> {
+impl Node {
     pub fn new_node(ip_addr: IpAddr, port: u16) -> Self {
         Node {
             node_id: ByteString::random_new(),
             ip_addr,
             port,
-            route_table: None,
-            hash_map: None,
         }
     }
 
@@ -93,8 +96,6 @@ impl<K, V> Node<K, V> {
             node_id: ByteString::random_new(),
             ip_addr,
             port,
-            route_table: None,
-            hash_map: Some(HashMap::new()),
         }
     }
 }

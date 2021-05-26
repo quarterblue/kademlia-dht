@@ -20,6 +20,6 @@ pub fn main() {
         count += 1
     }
 
-    let routetable: RouteTable<String, i32> = RouteTable::empty_new();
+    let routetable: RouteTable = RouteTable::empty_new();
     println!("{:?}", routetable);
 }
