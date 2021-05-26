@@ -20,11 +20,11 @@ impl<K, V> KBucket<K, V> {
             node_bucket: Vec::with_capacity(K_BUCKET_SIZE),
         }
     }
-    pub fn sort() {}
-    pub fn get_latest() -> Node<K, V> {
+    pub fn sort(&mut self) {}
+    pub fn get_latest(&self) -> &Node<K, V> {
         // TODO
     }
-    pub fn get_oldest() -> Node<K, V> {
+    pub fn get_oldest(&self) -> &Node<K, V> {
         // TODO
     }
 }
@@ -48,25 +48,33 @@ impl<K, V> Vertex<K, V> {
     }
 
     fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node<K, V>, node_iter: I) {
-        match node_iter.next().unwrap() {
-            0 => match self.left {
-                Some(vert) => {}
-                None => {}
-            },
-            1 => match self.right {
-                Some(vert) => {}
-                None => {}
-            },
+        if self.k_bucket.is_none() {
+            // TODO
+            // This is a vertex with no K_Bucket, trickle down to Left or Right vertex
+            // Depending on the iter.next() bit
+            match node_iter.next().unwrap() {
+                0 => match self.left {
+                    Some(vert) => {}
+                    None => {}
+                },
+                1 => match self.right {
+                    Some(vert) => {}
+                    None => {}
+                },
+            }
+        } else {
+            // TODO
+            // Check that K_Bucket is not full, add node to the bucket
+            let array = self.k_bucket.unwrap().node_bucket;
+            if array.len() < K_BUCKET_SIZE {
+                array.push(node);
+            } else {
+                // Split the K_Bucket into two if K_Bucket is full
+            }
         }
-
-        // if self.k_bucket.node_bucket.len() < K_BUCKET_SIZE {
-        //     self.k_bucket.node_bucket.push(node);
-        // } else {
-        //     // Trickle down to next k_bucket
-        //     // TO DO
-        //     println!("TODO")
-        // }
     }
+
+    fn add_k(&mut self, node: Node<K, V>) {}
 }
 
 // Trie structure representing the Route table composed of K buckets
@@ -92,22 +100,16 @@ impl<K, V> RouteTable<K, V> {
     pub fn add_vertex() {}
 
     // Add node to the k_bucket
-    pub fn add_node(&mut self, node: Node<K, V>) {
+    fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node<K, V>, node_iter: I) {
         match self.root {
             Some(unwrapped) => {
                 let vert = *unwrapped;
-                if vert.k_bucket.is_none() {
-                    // TODO
-                    // This is a vertex with no K_Bucket, trickle down to Left or Right vertex
-                    // Depending on the iter.next() bit
-                } else {
-                    // TODO
-                    // Check that K_Bucket is not full, add node to the bucket
-                    // Split the K_Bucket into two if full
-                }
+                vert.add_node(node, node_iter);
+                self.length += 1;
             }
             None => {
                 // TODO
+                // Root does not exist
                 // Error handling
             }
         }
