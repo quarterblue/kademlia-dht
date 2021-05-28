@@ -54,6 +54,12 @@ impl Iterator for ByteString {
         ret
     }
 }
+pub trait RPC<K, V> {
+    fn find_node(&self) -> Node;
+    fn store(&mut self) -> bool;
+    fn find_value(&self, key: K) -> V;
+    fn ping(&self) -> bool;
+}
 
 pub struct KademNode<K, V> {
     pub node_id: ByteString,
@@ -62,6 +68,34 @@ pub struct KademNode<K, V> {
     route_table: Option<RouteTable>,
     hash_map: Option<HashMap<K, V>>,
 }
+
+impl<K, V> KademNode<K, V> {
+    pub fn new(ip_addr: IpAddr, port: u16) -> Self {
+        KademNode {
+            node_id: ByteString::random_new(),
+            ip_addr,
+            port,
+            route_table: Some(RouteTable::empty_new()),
+            hash_map: Some(HashMap::new()),
+        }
+    }
+
+    pub fn init() {}
+
+    fn bind_rpc() {}
+}
+
+// impl<K, V> RPC<K, V> for KademNode<K, V> {
+//     fn find_node(&self) -> Node {}
+//     fn store(&mut self) -> bool {
+//         return true;
+//     }
+//     fn find_value(&self, key: K) -> V {}
+//     fn ping(&self) -> bool {
+//         return true;
+//     }
+// }
+
 #[derive(Debug, Clone, Copy)]
 pub struct Node {
     pub node_id: ByteString,
@@ -75,23 +109,8 @@ pub trait KadeNode {
     fn get_nodeid() -> ByteString;
 }
 
-pub trait RPC<K, V> {
-    fn find_node() -> Node;
-    fn store() -> bool;
-    fn find_value(key: K) -> V;
-    fn ping() -> bool;
-}
-
 impl Node {
     pub fn new_node(ip_addr: IpAddr, port: u16) -> Self {
-        Node {
-            node_id: ByteString::random_new(),
-            ip_addr,
-            port,
-        }
-    }
-
-    pub fn new_self(ip_addr: IpAddr, port: u16) -> Self {
         Node {
             node_id: ByteString::random_new(),
             ip_addr,
