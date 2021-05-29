@@ -61,6 +61,7 @@ pub trait RPC<K, V> {
     fn ping(&self) -> bool;
 }
 
+#[derive(Debug)]
 pub struct KademNode<K, V> {
     pub node_id: ByteString,
     pub ip_addr: IpAddr,

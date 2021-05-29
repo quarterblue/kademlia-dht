@@ -1,12 +1,16 @@
+mod kademlia_dht;
 mod node;
 mod rpc;
 mod trie;
 
+use kademlia_dht::kade_init;
 use lib::test;
 use node::{ByteString, Node};
 use rpc::{handle_message, init_client, init_server};
 use std::env;
 use std::net::UdpSocket;
+use std::thread;
+use std::time::Duration;
 use trie::RouteTable;
 
 pub fn main() {
@@ -32,6 +36,7 @@ pub fn main() {
         panic!("You must provid a server/client and a port");
     }
     let addr = format!("0.0.0.0:{}", args.get(2).unwrap());
+    let addr_2 = addr.clone();
 
     if args.get(1).unwrap() == "client" {
         println!(
@@ -44,7 +49,10 @@ pub fn main() {
             "Your Kademlia DHT Node Server is binded to port: {}",
             args.get(2).unwrap()
         );
-        rpc::init_server(&addr);
+        let rpc = thread::spawn(move || rpc::init_server(&addr));
+
+        kademlia_dht::kade_init(&addr_2);
+        rpc.join().unwrap();
     } else {
         println!("None");
     }
