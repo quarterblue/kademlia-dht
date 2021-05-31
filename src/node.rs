@@ -13,6 +13,7 @@ pub enum Bit {
     None,
 }
 
+// 160bit Node ID in tuple, 0 is an array of bits, and 1 is size
 #[derive(Debug, Clone, Copy)]
 pub struct ByteString(pub [u8; ID_LENGTH], usize);
 
@@ -20,6 +21,12 @@ impl ByteString {
     pub fn new(arr: [u8; ID_LENGTH]) -> Self {
         ByteString(arr, 0)
     }
+
+    pub fn new_empty() -> Self {
+        let node = [0; ID_LENGTH];
+        ByteString(node, 0)
+    }
+
     pub fn random_new() -> Self {
         let mut node = [0; ID_LENGTH];
         for i in 0..ID_LENGTH {
@@ -118,4 +125,30 @@ impl Node {
             port,
         }
     }
+
+    pub fn test_node(ip_addr: IpAddr, port: u16, arr: [u8; ID_LENGTH]) -> Self {
+        let empty_bytestring = ByteString::new(arr);
+        Node {
+            node_id: empty_bytestring,
+            ip_addr,
+            port,
+        }
+    }
+
+    // XOR Distance between two nodes
+    pub fn distance(&self, node_id: ByteString) -> ByteString {
+        let mut nodeid = ByteString::new_empty();
+        for i in 0..20 {
+            nodeid.0[i] = node_id.0[i] ^ self.node_id.0[i]
+        }
+        nodeid
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn node_distance() {}
 }

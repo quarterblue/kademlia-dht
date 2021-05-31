@@ -33,7 +33,7 @@ pub fn main() {
 
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        panic!("You must provid a server/client and a port");
+        panic!("You must provide a server/client and a port");
     }
     let addr = format!("0.0.0.0:{}", args.get(2).unwrap());
     let addr_2 = addr.clone();
