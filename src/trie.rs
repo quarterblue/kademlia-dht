@@ -49,6 +49,9 @@ impl KBucket {
     }
 }
 
+// Represents a single vertex in the trie of the Route Table.
+// This vertex could have a k-bucket, in which case it is a leaf.
+// If the vertex does not have a k-bucket, it is a inner vertex.
 #[derive(Debug)]
 pub struct Vertex {
     bit: Bit,
@@ -83,6 +86,7 @@ impl Vertex {
         (Some(Box::new(left)), Some(Box::new(right)))
     }
 
+    // Recursively adds a node to the current vertex by finding the closest matching k-bucket
     fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node, node_iter: &mut I) {
         if self.k_bucket.is_none() {
             // This is a vertex with no k-bucket, trickle down to Left or Right vertex
@@ -116,14 +120,14 @@ impl Vertex {
     fn add_k(&mut self, node: Node) {}
 }
 
-// Trie structure representing the Route table composed of K buckets
+// Trie structure representing the Route table composed of k-buckets
 #[derive(Debug)]
 pub struct RouteTable {
     pub length: u64,
     root: leaf_node,
 }
 
-// Trie is the implementation of the routing table composed of k-buckets
+// Implementation of the routing table composed of k-buckets
 impl RouteTable {
     pub fn empty_new() -> Self {
         RouteTable {

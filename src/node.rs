@@ -1,4 +1,5 @@
 use rand::random;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::iter::Iterator;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -44,6 +45,31 @@ impl ByteString {
     pub fn get(index: usize) -> Option<Bit> {
         // todo
         None
+    }
+}
+
+impl PartialEq for ByteString {
+    fn eq(&self, other: &Self) -> bool {
+        for i in 0..ID_LENGTH {
+            if self.0[i] != other.0[i] {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+// UNTESTED IMPLEMENTATION
+impl PartialOrd for ByteString {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        for i in 0..ID_LENGTH {
+            if self.0[i].cmp(&other.0[i]) == Ordering::Equal {
+                continue;
+            } else {
+                return Some(self.0[i].cmp(&other.0[i]));
+            }
+        }
+        return Some(Ordering::Equal);
     }
 }
 
@@ -177,5 +203,22 @@ mod tests {
         let new_node = Node::test_node(new_ip, port, arr);
         assert_eq!(new_node.ip_addr, new_ip);
         assert_eq!(new_node.port, port);
+    }
+
+    #[test]
+    fn bytestring_eq() {
+        let arr_one: [u8; ID_LENGTH] =
+            [0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+        let arr_two: [u8; ID_LENGTH] =
+            [0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+        let arr_three: [u8; ID_LENGTH] =
+            [0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+
+        let byte_one = ByteString::new(arr_one);
+        let byte_two = ByteString::new(arr_two);
+        let byte_three = ByteString::new(arr_three);
+
+        assert_eq!(byte_one, byte_two);
+        assert_ne!(byte_one, byte_three);
     }
 }
