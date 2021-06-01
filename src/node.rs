@@ -1,7 +1,7 @@
 use rand::random;
 use std::collections::HashMap;
 use std::iter::Iterator;
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use crate::trie::RouteTable;
 
@@ -150,5 +150,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn node_distance() {}
+    fn node_distance() {
+        let new_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+        let arr: [u8; ID_LENGTH] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+        let port: u16 = 5111;
+        let new_node = Node::test_node(new_ip, port, arr);
+
+        let comp_arr: [u8; ID_LENGTH] =
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9];
+
+        let comp_byte = ByteString::new(comp_arr);
+
+        let test_arr: [u8; ID_LENGTH] =
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14];
+
+        let xor_distance = new_node.distance(comp_byte);
+
+        assert_eq!(xor_distance.0, test_arr);
+    }
+
+    #[test]
+    fn new_node() {
+        let new_ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+        let arr: [u8; ID_LENGTH] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7];
+        let port: u16 = 5111;
+        let new_node = Node::test_node(new_ip, port, arr);
+        assert_eq!(new_node.ip_addr, new_ip);
+        assert_eq!(new_node.port, port);
+    }
 }
