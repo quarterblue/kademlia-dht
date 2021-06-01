@@ -155,4 +155,16 @@ impl RouteTable {
             }
         }
     }
+
+    fn find_closest(&self, node_id: [u8; ID_LENGTH]) -> Vec<Node> {
+        let alpha_nodes: Vec<Node> = Vec::new();
+        match self.root {
+            Some(ref x) => match &x.k_bucket {
+                Some(bucket) => {}
+                None => {}
+            },
+            None => {}
+        }
+        return alpha_nodes;
+    }
 }
