@@ -7,7 +7,7 @@ use std::rc::Rc;
 const NODES_PER_LEAF: usize = 1;
 const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
 
-type leaf_node = Option<Box<Vertex>>;
+type leaf_node = Option<Rc<RefCell<Vertex>>>;
 type node_list = Option<Rc<RefCell<Vec<Node>>>>;
 
 #[derive(Debug)]
@@ -92,15 +92,15 @@ impl Vertex {
             // This is a vertex with no k-bucket, trickle down to Left or Right vertex
             // Depending on the iter.next() bit
             match node_iter.next().unwrap() {
-                0 => match self.left {
-                    Some(_) => {
-                        self.left.as_mut().unwrap().add_node(node, node_iter);
+                0 => match &self.left {
+                    Some(x) => {
+                        x.borrow_mut().add_node(node, node_iter);
                     }
                     None => {}
                 },
-                1 => match self.right {
-                    Some(_) => {
-                        self.right.as_mut().unwrap().add_node(node, node_iter);
+                1 => match &self.right {
+                    Some(x) => {
+                        x.borrow_mut().add_node(node, node_iter);
                     }
                     None => {}
                 },
@@ -132,7 +132,7 @@ impl RouteTable {
     pub fn empty_new() -> Self {
         RouteTable {
             length: 0,
-            root: Some(Box::new(Vertex::new(Bit::None))),
+            root: Some(Rc::new(RefCell::new(Vertex::new(Bit::None)))),
         }
     }
 
@@ -142,10 +142,9 @@ impl RouteTable {
     // Add a node to the k_bucket starting from the root of the trie
     fn add_node(&mut self, node: Node) {
         match self.root.as_mut() {
-            Some(_) => {
-                let vert = self.root.as_mut().unwrap();
+            Some(x) => {
                 let mut iter = node.node_id.into_iter();
-                vert.add_node(node, &mut iter);
+                x.borrow_mut().add_node(node, &mut iter);
                 self.length += 1;
             }
             None => {
@@ -159,7 +158,7 @@ impl RouteTable {
     fn find_closest(&self, node_id: [u8; ID_LENGTH]) -> Vec<Node> {
         let alpha_nodes: Vec<Node> = Vec::new();
         match self.root {
-            Some(ref x) => match &x.k_bucket {
+            Some(ref x) => match &x.borrow_mut().k_bucket {
                 Some(bucket) => {}
                 None => {}
             },
