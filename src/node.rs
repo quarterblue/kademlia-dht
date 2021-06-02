@@ -99,7 +99,7 @@ pub struct KademNode<K, V> {
     pub node_id: ByteString,
     pub ip_addr: IpAddr,
     pub port: u16,
-    route_table: Option<RouteTable>,
+    pub route_table: Option<RouteTable>,
     hash_map: Option<HashMap<K, V>>,
 }
 
