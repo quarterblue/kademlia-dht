@@ -90,31 +90,34 @@ impl Vertex {
 
     // Recursively adds a node to the current vertex by finding the closest matching k-bucket
     fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node, node_iter: &mut I) {
-        if self.k_bucket.is_none() {
-            // This is a vertex with no k-bucket, trickle down to Left or Right vertex
-            // Depending on the iter.next() bit
-            match node_iter.next().unwrap() {
-                0 => match &self.left {
-                    Some(vert) => {
-                        vert.borrow_mut().add_node(node, node_iter);
-                    }
-                    None => {}
-                },
-                1 => match &self.right {
-                    Some(vert) => {
-                        vert.borrow_mut().add_node(node, node_iter);
-                    }
-                    None => {}
-                },
-                _ => {}
+        match &mut self.k_bucket {
+            Some(x) => {
+                // Check that K_Bucket is not full, add node to the bucket
+                if x.node_bucket.len() < K_BUCKET_SIZE {
+                    x.node_bucket.push(node);
+                } else {
+                    // TODO
+                    // Split the K_Bucket into two if K_Bucket is full
+                }
             }
-        } else {
-            // Check that K_Bucket is not full, add node to the bucket
-            if self.k_bucket.as_mut().unwrap().node_bucket.len() < K_BUCKET_SIZE {
-                self.k_bucket.as_mut().unwrap().node_bucket.push(node);
-            } else {
-                // TODO
-                // Split the K_Bucket into two if K_Bucket is full
+            None => {
+                // This is a vertex with no k-bucket, trickle down to Left or Right vertex
+                // Depending on the iter.next() bit
+                match node_iter.next().unwrap() {
+                    0 => match &self.left {
+                        Some(vert) => {
+                            vert.borrow_mut().add_node(node, node_iter);
+                        }
+                        None => {}
+                    },
+                    1 => match &self.right {
+                        Some(vert) => {
+                            vert.borrow_mut().add_node(node, node_iter);
+                        }
+                        None => {}
+                    },
+                    _ => {}
+                }
             }
         }
     }
@@ -142,7 +145,7 @@ impl RouteTable {
     pub fn add_vertex() {}
 
     // Add a node to the k_bucket starting from the root of the trie
-    fn add_node(&mut self, node: Node) {
+    pub fn add_node(&mut self, node: Node) {
         match self.root.as_mut() {
             Some(x) => {
                 let mut iter = node.node_id.into_iter();
