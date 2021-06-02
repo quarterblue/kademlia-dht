@@ -7,7 +7,7 @@ use std::rc::Rc;
 const NODES_PER_LEAF: usize = 1;
 const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
 
-type leaf_node = Option<Rc<RefCell<Vertex>>>;
+type LeafNode = Option<Rc<RefCell<Vertex>>>;
 type node_list = Option<Rc<RefCell<Vec<Node>>>>;
 
 #[derive(Debug)]
@@ -56,8 +56,9 @@ impl KBucket {
 pub struct Vertex {
     bit: Bit,
     k_bucket: Option<KBucket>,
-    left: leaf_node,
-    right: leaf_node,
+    parent: LeafNode,
+    left: LeafNode,
+    right: LeafNode,
 }
 
 impl Vertex {
@@ -65,6 +66,7 @@ impl Vertex {
         Vertex {
             bit,
             k_bucket: Some(KBucket::new()),
+            parent: None,
             left: None,
             right: None,
         }
@@ -93,14 +95,14 @@ impl Vertex {
             // Depending on the iter.next() bit
             match node_iter.next().unwrap() {
                 0 => match &self.left {
-                    Some(x) => {
-                        x.borrow_mut().add_node(node, node_iter);
+                    Some(vert) => {
+                        vert.borrow_mut().add_node(node, node_iter);
                     }
                     None => {}
                 },
                 1 => match &self.right {
-                    Some(x) => {
-                        x.borrow_mut().add_node(node, node_iter);
+                    Some(vert) => {
+                        vert.borrow_mut().add_node(node, node_iter);
                     }
                     None => {}
                 },
@@ -124,7 +126,7 @@ impl Vertex {
 #[derive(Debug)]
 pub struct RouteTable {
     pub length: u64,
-    root: leaf_node,
+    root: LeafNode,
 }
 
 // Implementation of the routing table composed of k-buckets
