@@ -38,22 +38,28 @@ pub fn main() {
     let addr = format!("0.0.0.0:{}", args.get(2).unwrap());
     let addr_2 = addr.clone();
 
-    if args.get(1).unwrap() == "client" {
-        println!(
-            "Your Kademlia DHT Node Client is binded to port: {}",
-            args.get(2).unwrap()
-        );
-        rpc::init_client(&addr);
-    } else if args.get(1).unwrap() == "server" {
-        println!(
-            "Your Kademlia DHT Node Server is binded to port: {}",
-            args.get(2).unwrap()
-        );
-        let rpc = thread::spawn(move || rpc::init_server(&addr));
+    let node_type = &args.get(1).unwrap()[..];
 
-        kademlia_dht::kade_init(&addr_2);
-        rpc.join().unwrap();
-    } else {
-        println!("None");
+    match node_type {
+        "client" => {
+            println!(
+                "Your Kademlia DHT Node Client is binded to port: {}",
+                args.get(2).unwrap()
+            );
+            rpc::init_client(&addr);
+        }
+        "server" => {
+            println!(
+                "Your Kademlia DHT Node Server is binded to port: {}",
+                args.get(2).unwrap()
+            );
+            let rpc = thread::spawn(move || rpc::init_server(&addr));
+
+            kademlia_dht::kade_init(&addr_2);
+            rpc.join().unwrap();
+        }
+        _ => {
+            println!("None");
+        }
     }
 }
