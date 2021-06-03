@@ -153,9 +153,8 @@ impl RouteTable {
                 self.length += 1;
             }
             None => {
-                // TODO
-                // Root does not exist
-                // Error handling
+                // Root does not exist, Error handling
+                panic!("Root does not exist");
             }
         }
     }
