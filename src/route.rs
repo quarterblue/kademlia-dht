@@ -72,8 +72,9 @@ impl Vertex {
         }
     }
 
-    // TODO
-    fn split(&mut self) -> (Option<Box<Vertex>>, Option<Box<Vertex>>) {
+    // Creates 2 vertices and splits the current k-bucket and instantiates 2 new k-buckets
+    // with the correseponding nodes
+    fn split(&mut self) -> (Option<Rc<RefCell<Vertex>>>, Option<Rc<RefCell<Vertex>>>) {
         // Allocate two new vertices for left and right
         let mut left = Vertex::new(Bit::Zero);
         let mut right = Vertex::new(Bit::One);
@@ -85,19 +86,26 @@ impl Vertex {
         left.k_bucket = tuple.0;
         right.k_bucket = tuple.1;
 
-        (Some(Box::new(left)), Some(Box::new(right)))
+        (
+            Some(Rc::new(RefCell::new(left))),
+            Some(Rc::new(RefCell::new(right))),
+        )
     }
 
     // Recursively adds a node to the current vertex by finding the closest matching k-bucket
     fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node, node_iter: &mut I) {
         match &mut self.k_bucket {
             Some(x) => {
-                // Check that K_Bucket is not full, add node to the bucket
+                // Check that K-Bucket is not full, add node to the bucket
                 if x.node_bucket.len() < K_BUCKET_SIZE {
                     x.node_bucket.push(node);
                 } else {
-                    // TODO
-                    // Split the K_Bucket into two if K_Bucket is full
+                    // Since K-Bucket is full, split the K-Bucket into two if K-Bucket
+                    // and retry adding to the current node
+                    let (left_vert, right_vert) = self.split();
+                    self.left = left_vert;
+                    self.right = right_vert;
+                    self.add_node(node, node_iter);
                 }
             }
             None => {
@@ -116,7 +124,9 @@ impl Vertex {
                         }
                         None => {}
                     },
-                    _ => {}
+                    _ => {
+                        unreachable!();
+                    }
                 }
             }
         }

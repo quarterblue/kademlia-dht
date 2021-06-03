@@ -1,17 +1,17 @@
 mod kademlia_dht;
 mod node;
+mod route;
 mod rpc;
-mod trie;
 
 use kademlia_dht::kade_init;
 use lib::test;
 use node::{ByteString, Node};
+use route::RouteTable;
 use rpc::{handle_message, init_client, init_server};
 use std::env;
 use std::net::UdpSocket;
 use std::thread;
 use std::time::Duration;
-use trie::RouteTable;
 
 pub fn main() {
     // test();

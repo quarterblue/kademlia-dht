@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-use crate::trie::RouteTable;
+use crate::route::RouteTable;
 
 pub const ID_LENGTH: usize = 20;
 #[derive(Debug)]
