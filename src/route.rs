@@ -2,6 +2,7 @@ use crate::node::{Bit, ByteString, Node, ID_LENGTH};
 use std::cell::RefCell;
 use std::iter::Iterator;
 
+use std::ops::Deref;
 use std::rc::Rc;
 
 const NODES_PER_LEAF: usize = 1;
@@ -74,14 +75,14 @@ impl Vertex {
 
     // Creates 2 vertices and splits the current k-bucket and instantiates 2 new k-buckets
     // with the correseponding nodes
-    fn split(&mut self) -> (Option<Rc<RefCell<Vertex>>>, Option<Rc<RefCell<Vertex>>>) {
+    fn split(vertex: &Rc<RefCell<Vertex>>) -> (Option<Rc<RefCell<Vertex>>>, Option<Rc<RefCell<Vertex>>>) {
         // Allocate two new vertices for left and right
         let mut left = Vertex::new(Bit::Zero);
         let mut right = Vertex::new(Bit::One);
         // Split the buckets into tuple
-        let tuple = self.k_bucket.as_ref().unwrap().split();
+        let tuple = vertex.borrow().k_bucket.as_ref().unwrap().split();
         // Deallocate the current bucket
-        self.k_bucket = None;
+        vertex.borrow_mut().k_bucket = None;
         // Link the new k-buckets to left and right vertices
         left.k_bucket = tuple.0;
         right.k_bucket = tuple.1;
@@ -93,8 +94,8 @@ impl Vertex {
     }
 
     // Recursively adds a node to the current vertex by finding the closest matching k-bucket
-    fn add_node<I: Iterator<Item = u8>>(&mut self, node: Node, node_iter: &mut I) {
-        match &mut self.k_bucket {
+    fn add_node<I: Iterator<Item = u8>>(vertex: &Rc<RefCell<Vertex>>, node: Node, node_iter: &mut I) {
+        match &mut vertex.borrow_mut().k_bucket {
             Some(x) => {
                 // Check that K-Bucket is not full, add node to the bucket
                 if x.node_bucket.len() < K_BUCKET_SIZE {
@@ -102,25 +103,25 @@ impl Vertex {
                 } else {
                     // Since K-Bucket is full, split the K-Bucket into two if K-Bucket
                     // and retry adding to the current node
-                    let (left_vert, right_vert) = self.split();
-                    self.left = left_vert;
-                    self.right = right_vert;
-                    self.add_node(node, node_iter);
+                    let (left_vert, right_vert) = Vertex::split(vertex);
+                    vertex.borrow_mut().left = left_vert;
+                    vertex.borrow_mut().right = right_vert;
+                    Vertex::add_node(vertex, node, node_iter);
                 }
             }
             None => {
                 // This is a vertex with no k-bucket, trickle down to Left or Right vertex
                 // Depending on the iter.next() bit
                 match node_iter.next().unwrap() {
-                    0 => match &self.left {
+                    0 => match &vertex.borrow().left {
                         Some(vert) => {
-                            vert.borrow_mut().add_node(node, node_iter);
+                            Vertex::add_node(vert, node, node_iter);
                         }
                         None => {}
                     },
-                    1 => match &self.right {
+                    1 => match &vertex.borrow().right {
                         Some(vert) => {
-                            vert.borrow_mut().add_node(node, node_iter);
+                            Vertex::add_node(vert, node, node_iter);
                         }
                         None => {}
                     },
@@ -159,7 +160,7 @@ impl RouteTable {
         match self.root.as_mut() {
             Some(x) => {
                 let mut iter = node.node_id.into_iter();
-                x.borrow_mut().add_node(node, &mut iter);
+                Vertex::add_node(x, node, &mut iter);
                 self.length += 1;
             }
             None => {
