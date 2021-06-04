@@ -3,7 +3,9 @@ use std::cell::RefCell;
 use std::iter::Iterator;
 
 use std::ops::Deref;
+use std::ops::DerefMut;
 use std::rc::Rc;
+use std::rc::Weak;
 
 const NODES_PER_LEAF: usize = 1;
 const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
@@ -57,7 +59,7 @@ impl KBucket {
 pub struct Vertex {
     bit: Bit,
     k_bucket: Option<KBucket>,
-    parent: LeafNode,
+    parent: Option<Weak<RefCell<Vertex>>>,
     left: LeafNode,
     right: LeafNode,
 }
@@ -95,21 +97,33 @@ impl Vertex {
 
     // Recursively adds a node to the current vertex by finding the closest matching k-bucket
     fn add_node<I: Iterator<Item = u8>>(vertex: &Rc<RefCell<Vertex>>, node: Node, node_iter: &mut I) {
-        match &mut vertex.borrow_mut().k_bucket {
-            Some(x) => {
-                // Check that K-Bucket is not full, add node to the bucket
-                if x.node_bucket.len() < K_BUCKET_SIZE {
-                    x.node_bucket.push(node);
-                } else {
-                    // Since K-Bucket is full, split the K-Bucket into two if K-Bucket
-                    // and retry adding to the current node
-                    let (left_vert, right_vert) = Vertex::split(vertex);
-                    vertex.borrow_mut().left = left_vert;
-                    vertex.borrow_mut().right = right_vert;
-                    Vertex::add_node(vertex, node, node_iter);
+        let a;
+        {
+            a = vertex.borrow().k_bucket.is_none();
+        }
+        match a {
+            false => {
+                {
+                    let mut x = vertex.borrow_mut();
+                    let y = x.k_bucket.as_mut().unwrap();
+                    // Check that K-Bucket is not full, add node to the bucket
+                    if y.node_bucket.len() < K_BUCKET_SIZE {
+                        y.node_bucket.push(node);
+                        return;
+                    }
                 }
+
+                // Since K-Bucket is full, split the K-Bucket into two if K-Bucket
+                // and retry adding to the current node
+                let (left_vert, right_vert) = Vertex::split(vertex);
+                left_vert.as_ref().unwrap().borrow_mut().parent = Some(Rc::downgrade(&Rc::clone(vertex)));
+                right_vert.as_ref().unwrap().borrow_mut().parent = Some(Rc::downgrade(&Rc::clone(vertex)));
+                vertex.borrow_mut().left = left_vert;
+                vertex.borrow_mut().right = right_vert;
+                Vertex::add_node(vertex, node, node_iter);
+
             }
-            None => {
+            true => {
                 // This is a vertex with no k-bucket, trickle down to Left or Right vertex
                 // Depending on the iter.next() bit
                 match node_iter.next().unwrap() {
