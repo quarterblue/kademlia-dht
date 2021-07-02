@@ -14,7 +14,7 @@ pub enum Bit {
     None,
 }
 
-// 160bit Node ID in tuple, 0 is an array of bits, and 1 is size
+// 160 bit Node ID in tuple, 0 position is an array of bits, and 1 position is size
 #[derive(Debug, Clone, Copy)]
 pub struct ByteString(pub [u8; ID_LENGTH], usize);
 
@@ -113,22 +113,7 @@ impl<K, V> KademNode<K, V> {
             hash_map: Some(HashMap::new()),
         }
     }
-
-    pub fn init() {}
-
-    fn bind_rpc() {}
 }
-
-// impl<K, V> RPC<K, V> for KademNode<K, V> {
-//     fn find_node(&self) -> Node {}
-//     fn store(&mut self) -> bool {
-//         return true;
-//     }
-//     fn find_value(&self, key: K) -> V {}
-//     fn ping(&self) -> bool {
-//         return true;
-//     }
-// }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Node {

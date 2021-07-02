@@ -3,15 +3,12 @@ use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::net::UdpSocket;
 use std::{thread, time};
-
-// pub enum Request<K, V> {
-//     Ping,
-//     Store(K, V),
-//     FindNode,
-//     FindValue(K, V),
-// }
-
-// pub enum Response {}
+pub enum Request<K, V> {
+    Ping,
+    Store(K, V),
+    FindNode,
+    FindValue(K, V),
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum RequestFuncs {

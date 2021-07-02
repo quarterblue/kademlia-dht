@@ -14,23 +14,6 @@ use std::thread;
 use std::time::Duration;
 
 pub fn main() {
-    // test();
-    // let trie: Trie<i32> = Trie::empty_new();
-    // println!("{:?}", trie);
-
-    // let node = ByteString::new([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    // let mut count = 0;
-    // for i in node {
-    //     print!("{} ", i);
-    //     if count % 8 == 7 {
-    //         println!()
-    //     }
-    //     count += 1
-    // }
-
-    // let routetable: RouteTable = RouteTable::empty_new();
-    // println!("{:?}", routetable);
-
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         panic!("You must provide a server/client and a port");
@@ -59,7 +42,7 @@ pub fn main() {
             rpc.join().unwrap();
         }
         _ => {
-            println!("None");
+            println!("You must provide a valid type (server or client).");
         }
     }
 }
