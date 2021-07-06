@@ -5,12 +5,12 @@ use std::iter::Iterator;
 use std::rc::Rc;
 use std::rc::Weak;
 
-const NODES_PER_LEAF: usize = 1;
 const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purposes, use 4
 
+// Holds the Vertex node in a RefCell for shared mutability
 type LeafNode = Option<Rc<RefCell<Vertex>>>;
-type node_list = Option<Rc<RefCell<Vec<Node>>>>;
 
+// This represents the K-bucket described in the original paper
 #[derive(Debug)]
 pub struct KBucket {
     node_bucket: Vec<Node>,
@@ -75,7 +75,9 @@ impl Vertex {
 
     // Creates 2 vertices and splits the current k_bucket and instantiates 2 new k_bucket
     // with the correseponding nodes
-    fn split(vertex: &Rc<RefCell<Vertex>>) -> (Option<Rc<RefCell<Vertex>>>, Option<Rc<RefCell<Vertex>>>) {
+    fn split(
+        vertex: &Rc<RefCell<Vertex>>,
+    ) -> (Option<Rc<RefCell<Vertex>>>, Option<Rc<RefCell<Vertex>>>) {
         // Allocate two new vertices for left and right
         let mut left = Vertex::new(Bit::One);
         let mut right = Vertex::new(Bit::Zero);
@@ -94,7 +96,11 @@ impl Vertex {
     }
 
     // Recursively adds a node to the current vertex by finding the closest matching k_bucket
-    fn add_node<I: Iterator<Item = u8>>(vertex: &Rc<RefCell<Vertex>>, node: Node, node_iter: &mut I) {
+    fn add_node<I: Iterator<Item = u8>>(
+        vertex: &Rc<RefCell<Vertex>>,
+        node: Node,
+        node_iter: &mut I,
+    ) {
         let has_k_bucket;
         {
             // Immutably borrow through the RefCell
@@ -122,8 +128,10 @@ impl Vertex {
                 let (left_vert, right_vert) = Vertex::split(vertex);
                 {
                     // Mutably borrow the Left and Right children, and add their parent as a Weak pointer
-                    left_vert.as_ref().unwrap().borrow_mut().parent = Some(Rc::downgrade(&Rc::clone(vertex)));
-                    right_vert.as_ref().unwrap().borrow_mut().parent = Some(Rc::downgrade(&Rc::clone(vertex)));
+                    left_vert.as_ref().unwrap().borrow_mut().parent =
+                        Some(Rc::downgrade(&Rc::clone(vertex)));
+                    right_vert.as_ref().unwrap().borrow_mut().parent =
+                        Some(Rc::downgrade(&Rc::clone(vertex)));
                     // End borrow
                 }
                 {
@@ -134,27 +142,24 @@ impl Vertex {
                 }
                 // Recursively trickle down once more to add the node
                 Vertex::add_node(vertex, node, node_iter);
-
             }
             // Recursive step: Vertex has no k_bucket
             // Check next bit, borrow vertex, and recursively trickle down
-            false => {
-                match node_iter.next().unwrap() {
-                    1 => match &vertex.borrow().left {
-                        Some(vert) => {
-                            Vertex::add_node(vert, node, node_iter);
-                        }
-                        None => {}
+            false => match node_iter.next().unwrap() {
+                1 => match &vertex.borrow().left {
+                    Some(vert) => {
+                        Vertex::add_node(vert, node, node_iter);
                     }
-                    0 => match &vertex.borrow().right {
-                        Some(vert) => {
-                            Vertex::add_node(vert, node, node_iter);
-                        }
-                        None => {}
+                    None => {}
+                },
+                0 => match &vertex.borrow().right {
+                    Some(vert) => {
+                        Vertex::add_node(vert, node, node_iter);
                     }
-                    _ => unreachable!(),
-                }
-            }
+                    None => {}
+                },
+                _ => unreachable!(),
+            },
         }
     }
 }

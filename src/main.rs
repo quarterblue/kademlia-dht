@@ -16,7 +16,7 @@ use std::time::Duration;
 pub fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        panic!("You must provide a server/client and a port");
+        panic!("You must provide a server/client/full and a port");
     }
     let addr = format!("0.0.0.0:{}", args.get(2).unwrap());
     let addr_2 = addr.clone();
@@ -41,8 +41,18 @@ pub fn main() {
             kademlia_dht::kade_init(&addr_2);
             rpc.join().unwrap();
         }
+        "full" => {
+            println!(
+                "Your Kademlia DHT Node Server is binded to port: {}",
+                args.get(2).unwrap()
+            );
+            let rpc = thread::spawn(move || rpc::init_server(&addr));
+
+            kademlia_dht::kade_init(&addr_2);
+            rpc.join().unwrap();
+        }
         _ => {
-            println!("You must provide a valid type (server or client).");
+            println!("You must provide a valid type (server / client / full).");
         }
     }
 }

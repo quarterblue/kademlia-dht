@@ -14,20 +14,23 @@ pub enum Bit {
     None,
 }
 
-// 160 bit Node ID in tuple, 0 position is an array of bits, and 1 position is size
+// 160 bit Node ID in tuple, 0 position is an array of bits, and 1 position is the size
 #[derive(Debug, Clone, Copy)]
 pub struct ByteString(pub [u8; ID_LENGTH], usize);
 
 impl ByteString {
+    // ByteString constructor that takes in a preset array of bitstring
     pub fn new(arr: [u8; ID_LENGTH]) -> Self {
         ByteString(arr, 0)
     }
 
+    // ByteString constructor to create an empty node ID
     pub fn new_empty() -> Self {
         let node = [0; ID_LENGTH];
         ByteString(node, 0)
     }
 
+    // ByeString constructor to create a random 160 bit node ID
     pub fn random_new() -> Self {
         let mut node = [0; ID_LENGTH];
         for i in 0..ID_LENGTH {
@@ -43,8 +46,7 @@ impl ByteString {
     }
 
     pub fn get(index: usize) -> Option<Bit> {
-        // todo
-        None
+        todo!()
     }
 }
 
@@ -129,6 +131,8 @@ pub trait KadeNode {
 }
 
 impl Node {
+    // The default new node constructor
+    // returns a node with a random 160 bit node_id
     pub fn new_node(ip_addr: IpAddr, port: u16) -> Self {
         Node {
             node_id: ByteString::random_new(),
@@ -137,6 +141,9 @@ impl Node {
         }
     }
 
+    // The Node constructor for testing purposes only
+    // returns a node with an empty node id
+    // the node id should be manually set and tested for equality and ordering
     pub fn test_node(ip_addr: IpAddr, port: u16, arr: [u8; ID_LENGTH]) -> Self {
         let empty_bytestring = ByteString::new(arr);
         Node {
@@ -146,13 +153,13 @@ impl Node {
         }
     }
 
-    // XOR Distance between two nodes
+    // Calculates and returns XOR Distance between two nodes
     pub fn distance(&self, node_id: ByteString) -> ByteString {
         let mut nodeid = ByteString::new_empty();
         for i in 0..20 {
             nodeid.0[i] = node_id.0[i] ^ self.node_id.0[i]
         }
-        nodeid
+        return nodeid;
     }
 }
 
