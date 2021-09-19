@@ -11,7 +11,7 @@ pub const ID_LENGTH: usize = 20;
 pub enum Bit {
     Zero,
     One,
-    None,
+    Root,
 }
 
 // 160 bit Node ID in tuple, 0 position is an array of bits, and 1 position is the size

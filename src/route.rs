@@ -11,6 +11,7 @@ const K_BUCKET_SIZE: usize = 4; // Optimal K_BUCKET_SIZE is 20, for testing purp
 type LeafNode = Option<Rc<RefCell<Vertex>>>;
 
 // This represents the K-bucket described in the original paper
+// K-bucket holds K number of nodes which stores <IP addr, UDP port, Node ID>
 #[derive(Debug)]
 pub struct KBucket {
     node_bucket: Vec<Node>,
@@ -52,7 +53,7 @@ impl KBucket {
 
 // Represents a single vertex in the trie of the Route Table.
 // This vertex could have a k_bucket in which case it is a leaf.
-// If the vertex does not have a k_bucket, it is a inner vertex.
+// If the vertex does not have a k_bucket, it is an inner vertex.
 #[derive(Debug)]
 pub struct Vertex {
     bit: Bit,
@@ -105,6 +106,7 @@ impl Vertex {
         {
             // Immutably borrow through the RefCell
             // Check if there is a k_bucket
+            // This stores the result in has_k_bucket, and drops the borrow as it exits this scope
             has_k_bucket = vertex.borrow().k_bucket.is_some();
             // End borrow
         }
@@ -124,6 +126,12 @@ impl Vertex {
                 }
 
                 // If it didn't return, the k_bucket is full.
+                // Check that current vertex is a prefix of the node id to be added
+
+                // If it isn't, perform logic to replace the LRU cache
+
+                // If it is, proceed to splitting process
+
                 // Split the k_bucket into two
                 let (left_vert, right_vert) = Vertex::split(vertex);
                 {
@@ -176,7 +184,7 @@ impl RouteTable {
     pub fn empty_new() -> Self {
         RouteTable {
             length: 0,
-            root: Some(Rc::new(RefCell::new(Vertex::new(Bit::None)))),
+            root: Some(Rc::new(RefCell::new(Vertex::new(Bit::Root)))),
         }
     }
 
@@ -189,6 +197,7 @@ impl RouteTable {
             Some(x) => {
                 let mut iter = node.node_id.into_iter();
                 Vertex::add_node(x, node, &mut iter);
+                // TODO: Check invariant and edge cases
                 self.length += 1;
             }
             None => {
@@ -198,6 +207,7 @@ impl RouteTable {
         }
     }
 
+    // Finds the closest alpha (system wide paramter) number of nodes to the node id and returns it
     fn find_closest(&self, node_id: [u8; ID_LENGTH]) -> Vec<Node> {
         let alpha_nodes: Vec<Node> = Vec::new();
         match self.root {
