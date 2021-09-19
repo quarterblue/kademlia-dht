@@ -101,8 +101,11 @@ impl Vertex {
         vertex: &Rc<RefCell<Vertex>>,
         node: Node,
         node_iter: &mut I,
+        node_id: &ByteString,
+        prefix_contained: bool,
     ) {
-        let has_k_bucket;
+        let has_k_bucket: bool;
+        let mut split: bool = false;
         {
             // Immutably borrow through the RefCell
             // Check if there is a k_bucket
@@ -122,47 +125,65 @@ impl Vertex {
                         bucket.node_bucket.push(node);
                         return;
                     }
+                    // If it didn't return, the k_bucket is full.
+                    // Remember full node_id length edge cases.
+                    if prefix_contained {
+                        let node_iter_next: u8 = node_iter.next().unwrap();
+                        // Check that current vertex is a prefix of the node id to be added
+                        // If it isn't, perform logic to replace the LRU cache
+                        match node_iter_next {
+                            1 => {
+                                if !matches!(vert.bit, Bit::One) {
+                                    split = false;
+                                    // Handle logic for pinging and replacing current k-bucket list
+                                }
+                            }
+                            0 => {
+                                if !matches!(vert.bit, Bit::Zero) {
+                                    split = false;
+                                    // Handle logic for pinging and replacing current k-bucket list
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                     // End borrow
                 }
-
-                // If it didn't return, the k_bucket is full.
-                // Check that current vertex is a prefix of the node id to be added
-
-                // If it isn't, perform logic to replace the LRU cache
 
                 // If it is, proceed to splitting process
-
-                // Split the k_bucket into two
-                let (left_vert, right_vert) = Vertex::split(vertex);
-                {
-                    // Mutably borrow the Left and Right children, and add their parent as a Weak pointer
-                    left_vert.as_ref().unwrap().borrow_mut().parent =
-                        Some(Rc::downgrade(&Rc::clone(vertex)));
-                    right_vert.as_ref().unwrap().borrow_mut().parent =
-                        Some(Rc::downgrade(&Rc::clone(vertex)));
-                    // End borrow
+                if split {
+                    // Split the k_bucket into two
+                    let (left_vert, right_vert) = Vertex::split(vertex);
+                    {
+                        // Mutably borrow the Left and Right children, and add their parent as a Weak pointer
+                        left_vert.as_ref().unwrap().borrow_mut().parent =
+                            Some(Rc::downgrade(&Rc::clone(vertex)));
+                        right_vert.as_ref().unwrap().borrow_mut().parent =
+                            Some(Rc::downgrade(&Rc::clone(vertex)));
+                        // End borrow
+                    }
+                    {
+                        // Mutably borrow the parent, and set the Left and Right child fields
+                        vertex.borrow_mut().left = left_vert;
+                        vertex.borrow_mut().right = right_vert;
+                        // End borrow
+                    }
+                    // Recursively trickle down once more to add the node
+                    Vertex::add_node(vertex, node, node_iter, &node_id, prefix_contained);
                 }
-                {
-                    // Mutably borrow the parent, and set the Left and Right child fields
-                    vertex.borrow_mut().left = left_vert;
-                    vertex.borrow_mut().right = right_vert;
-                    // End borrow
-                }
-                // Recursively trickle down once more to add the node
-                Vertex::add_node(vertex, node, node_iter);
             }
             // Recursive step: Vertex has no k_bucket
             // Check next bit, borrow vertex, and recursively trickle down
             false => match node_iter.next().unwrap() {
                 1 => match &vertex.borrow().left {
                     Some(vert) => {
-                        Vertex::add_node(vert, node, node_iter);
+                        Vertex::add_node(vert, node, node_iter, &node_id, prefix_contained);
                     }
                     None => {}
                 },
                 0 => match &vertex.borrow().right {
                     Some(vert) => {
-                        Vertex::add_node(vert, node, node_iter);
+                        Vertex::add_node(vert, node, node_iter, &node_id, prefix_contained);
                     }
                     None => {}
                 },
@@ -176,14 +197,16 @@ impl Vertex {
 #[derive(Debug)]
 pub struct RouteTable {
     pub length: u64,
+    node_id: ByteString,
     root: LeafNode,
 }
 
 // Implementation of the routing table composed of k_buckets
 impl RouteTable {
-    pub fn empty_new() -> Self {
+    pub fn empty_new(node_id: ByteString) -> Self {
         RouteTable {
             length: 0,
+            node_id,
             root: Some(Rc::new(RefCell::new(Vertex::new(Bit::Root)))),
         }
     }
@@ -191,12 +214,16 @@ impl RouteTable {
     // Add vertex to the trie that contains k_bucket
     pub fn add_vertex() {}
 
+    pub fn contain_prefix(&self, node_id: [u8; ID_LENGTH]) -> bool {
+        true
+    }
+
     // Add a node to the k_bucket starting from the root of the trie
     pub fn add_node(&mut self, node: Node) {
         match self.root.as_mut() {
             Some(x) => {
                 let mut iter = node.node_id.into_iter();
-                Vertex::add_node(x, node, &mut iter);
+                Vertex::add_node(x, node, &mut iter, &self.node_id, true);
                 // TODO: Check invariant and edge cases
                 self.length += 1;
             }

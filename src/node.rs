@@ -107,11 +107,12 @@ pub struct KademNode<K, V> {
 
 impl<K, V> KademNode<K, V> {
     pub fn new(ip_addr: IpAddr, port: u16) -> Self {
+        let node_id = ByteString::random_new();
         KademNode {
-            node_id: ByteString::random_new(),
+            node_id,
             ip_addr,
             port,
-            route_table: Some(RouteTable::empty_new()),
+            route_table: Some(RouteTable::empty_new(node_id.clone())),
             hash_map: Some(HashMap::new()),
         }
     }
