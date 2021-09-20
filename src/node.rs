@@ -11,7 +11,7 @@ pub const ID_LENGTH: usize = 20;
 pub enum Bit {
     Zero,
     One,
-    None,
+    Root,
 }
 
 // 160 bit Node ID in tuple, 0 position is an array of bits, and 1 position is the size
@@ -95,7 +95,8 @@ pub trait RPC<K, V> {
     fn find_value(&self, key: K) -> V;
     fn ping(&self) -> bool;
 }
-
+// KademNode represents the entire data struct of a node
+// Contained within is the route table for finding other nodes, and hash map to store the k, v pairs
 #[derive(Debug)]
 pub struct KademNode<K, V> {
     pub node_id: ByteString,
@@ -107,16 +108,18 @@ pub struct KademNode<K, V> {
 
 impl<K, V> KademNode<K, V> {
     pub fn new(ip_addr: IpAddr, port: u16) -> Self {
+        let node_id = ByteString::random_new();
         KademNode {
-            node_id: ByteString::random_new(),
+            node_id,
             ip_addr,
             port,
-            route_table: Some(RouteTable::empty_new()),
+            route_table: Some(RouteTable::empty_new(node_id.clone())),
             hash_map: Some(HashMap::new()),
         }
     }
 }
-
+// Node represents a entity that is running a Kademlia DHT protocol
+// It can be uniquely identified by the node_id and has ip addr and port for UDP connection
 #[derive(Debug, Clone, Copy)]
 pub struct Node {
     pub node_id: ByteString,
