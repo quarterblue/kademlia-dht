@@ -135,13 +135,13 @@ impl Vertex {
                             1 => {
                                 if !matches!(vert.bit, Bit::One) {
                                     split = false;
-                                    // Handle logic for pinging and replacing current k-bucket list
+                                    // TODO: Handle logic for pinging and replacing current k-bucket list
                                 }
                             }
                             0 => {
                                 if !matches!(vert.bit, Bit::Zero) {
                                     split = false;
-                                    // Handle logic for pinging and replacing current k-bucket list
+                                    // TODO: Handle logic for pinging and replacing current k-bucket list
                                 }
                             }
                             _ => {}
@@ -150,7 +150,7 @@ impl Vertex {
                     // End borrow
                 }
 
-                // If it is, proceed to splitting process
+                // If it is contained in the prefix, proceed to splitting process
                 if split {
                     // Split the k_bucket into two
                     let (left_vert, right_vert) = Vertex::split(vertex);
@@ -169,7 +169,7 @@ impl Vertex {
                         // End borrow
                     }
                     // Recursively trickle down once more to add the node
-                    Vertex::add_node(vertex, node, node_iter, &node_id, prefix_contained);
+                    Vertex::add_node(vertex, node, node_iter, &node_id, false);
                 }
             }
             // Recursive step: Vertex has no k_bucket
@@ -213,10 +213,6 @@ impl RouteTable {
 
     // Add vertex to the trie that contains k_bucket
     pub fn add_vertex() {}
-
-    pub fn contain_prefix(&self, node_id: [u8; ID_LENGTH]) -> bool {
-        true
-    }
 
     // Add a node to the k_bucket starting from the root of the trie
     pub fn add_node(&mut self, node: Node) {
